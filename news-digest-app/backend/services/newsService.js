@@ -22,7 +22,19 @@ async function fetchFromNewsAPI() {
     },
   });
 
-  return response.data.articles || [];
+  const articles = (response.data.articles || []).map((article) => ({
+    title: article.title,
+    content: article.content || article.description || '',
+    category: article.source?.name || 'General',
+    source: article.source?.name || 'Unknown',
+    url: article.url, // MUST be real NewsAPI link
+    publishedAt: article.publishedAt ? new Date(article.publishedAt) : new Date(),
+  }));
+
+  // Filter out any malformed or missing URLs
+  return articles.filter(
+    (a) => typeof a.url === 'string' && a.url.startsWith('http')
+  );
 }
 
 function inferCategory(article) {
@@ -40,28 +52,30 @@ async function fetchAndStoreLatestNews() {
   let storedCount = 0;
 
   for (const a of externalArticles) {
+    // Ensure we never store placeholder/example URLs
+    if (!a.url || a.url.includes('example.com')) {
+      continue;
+    }
+
     const exists = await Article.findOne({ url: a.url });
     if (exists) continue;
 
-    const combinedContent =
-      a.content || a.description || `${a.title || ''} - ${a.description || ''}`;
-
     let summary = null;
     try {
-      summary = await summarizeArticle(combinedContent);
+      summary = await summarizeArticle(a.content || a.title || '');
     } catch (err) {
       console.error('Error summarizing article', err.message);
     }
 
-    const category = inferCategory(a);
+    const inferredCategory = inferCategory(a);
 
     await Article.create({
       title: a.title,
-      content: combinedContent,
-      category,
+      content: a.content,
+      category: inferredCategory,
       source: a.source?.name || 'Unknown',
       url: a.url,
-      publishedAt: a.publishedAt ? new Date(a.publishedAt) : new Date(),
+      publishedAt: a.publishedAt || new Date(),
       summary,
     });
 

@@ -1,0 +1,19 @@
+# ======== BACKEND ========
+
+backend/.env          # NEVER push real environment variables
+backend/node_modules/ # installed packages
+backend/package-lock.json
+backend/yarn.lock
+
+# ======== FRONTEND ========
+
+frontend/.env         # contains API URL / secrets
+frontend/node_modules/
+frontend/build/       # production build folder
+
+# ======== GENERAL ========
+
+node_modules/         # if any at root
+.DS_Store             # mac system file
+npm-debug.log*
+yarn-error.log*

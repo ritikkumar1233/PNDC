@@ -10,7 +10,12 @@ async function summarizeArticle(content) {
     return null;
   }
 
-  const prompt = `Summarize this news in 3 clear bullet points.\n\n${content}`;
+  const prompt = `Summarize the following news in 5 detailed bullet points.
+Each point should be 1–2 full sentences explaining the idea clearly.
+Avoid very short phrases or one-liners.
+
+News:
+${content}`;
 
   const completion = await client.chat.completions.create({
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
