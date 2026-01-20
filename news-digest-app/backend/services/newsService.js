@@ -85,7 +85,60 @@ async function fetchAndStoreLatestNews() {
   return { fetchedCount: externalArticles.length, storedCount };
 }
 
+async function getPaginatedNews({ page = 1, limit = 10, preference }) {
+  const parsedPage = Number.isNaN(page) || page < 1 ? 1 : page;
+  const parsedLimit =
+    Number.isNaN(limit) || limit < 1 || limit > 100 ? 10 : limit;
+
+  const filter = {};
+
+  if (preference && preference.trim().length > 0) {
+    const regex = new RegExp(preference.trim(), 'i');
+    filter.$or = [
+      { category: regex },
+      { title: regex },
+      { summary: regex },
+    ];
+  }
+
+  const totalArticles = await Article.countDocuments(filter);
+  const totalPages =
+    totalArticles === 0 ? 1 : Math.ceil(totalArticles / parsedLimit);
+
+  const articles = await Article.find(filter)
+    .sort({ publishedAt: -1 })
+    .skip((parsedPage - 1) * parsedLimit)
+    .limit(parsedLimit);
+
+  return {
+    page: parsedPage,
+    limit: parsedLimit,
+    totalArticles,
+    totalPages,
+    articles,
+  };
+}
+
+async function summarizeArticleById(articleId) {
+  const article = await Article.findById(articleId);
+  if (!article) {
+    const err = new Error('Article not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const content = article.content || article.title || '';
+  const summary = await summarizeArticle(content);
+
+  article.summary = summary;
+  await article.save();
+
+  return article;
+}
+
 module.exports = {
   fetchAndStoreLatestNews,
+  getPaginatedNews,
+  summarizeArticleById,
 };
 

@@ -20,6 +20,10 @@ function App() {
   const handleLogin = (userData, token) => {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
+     localStorage.setItem(
+      'userPreferences',
+      JSON.stringify(userData.interests || [])
+    );
     setUser(userData);
     navigate('/dashboard');
   };
@@ -27,6 +31,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('userPreferences');
     setUser(null);
     navigate('/login');
   };

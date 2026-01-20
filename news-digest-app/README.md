@@ -96,6 +96,11 @@ MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/news-digest-app?re
 JWT_SECRET=your_jwt_secret
 FRONTEND_URL=http://localhost:3000
 NEWS_API_KEY=your_newsapi_key
+# Prefer Gemini (recommended)
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=models/text-bison-001
+
+# Optional fallback provider
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-4o-mini
 SENDGRID_API_KEY=your_sendgrid_api_key
@@ -155,8 +160,8 @@ Demo login:
 ## How it Works
 
 - News is fetched from **NewsAPI** (`top-headlines`) and stored in MongoDB.
-- Each article is summarized with OpenAI using the prompt:
-  - “Summarize this news in 3 clear bullet points.”
+- Each article is summarized with Gemini (preferred) or OpenAI (fallback) using the prompt:
+  - “Summarize the following news in 5 detailed bullet points...”
 - At 8 PM daily, the system:
   - Matches articles to each user’s `interests`
   - Generates a digest summary
